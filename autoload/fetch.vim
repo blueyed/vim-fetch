@@ -75,17 +75,12 @@ function! fetch#edit(file, spec) abort
     return 0                " in doubt, end with invalid user input
   endif
 
-  " don't re-edit if we are in the target buffer already
-  let l:bufpath = expand('%:p:')
-  if l:bufpath is fnamemodify(l:file, ':p')
-    return fetch#setpos(l:pos)
-  endif
-
   " processing setup
-  let l:pre = ''            " will be prefixed to edit command
+  let l:pre  = ''           " will be prefixed to edit command
+  let l:bang = 0            " force editing by using bang command?
 
   " if current buffer is spec'ed and invalid set it up for wiping
-  if  l:bufpath is fnamemodify(a:file, ':p')
+  if expand('%:p') is fnamemodify(a:file, ':p')
     for l:ignore in s:ignore
       if l:ignore.detect(bufnr('%')) is 1
         return 0
@@ -93,6 +88,7 @@ function! fetch#edit(file, spec) abort
     endfor
     set bufhidden=wipe      " avoid issues with |bwipeout|
     let l:pre .= 'keepalt ' " don't mess up alternate file on switch
+    let l:bang = 1          " discard merrily
   endif
 
   " clean up argument list
@@ -102,18 +98,21 @@ function! fetch#edit(file, spec) abort
       execute 'argdelete' fnameescape(a:file)
       execute l:argidx.'argadd' fnameescape(l:file)
     endif
-    if index(argv(), l:file) isnot -1
-      let l:pre .= 'arg'    " set arglist index to edited file
-    endif
+  endif
+  
+  " edit on argument list if required
+  if index(argv(), l:file) isnot -1
+    let l:pre .= 'arg'    " set arglist index to edited file
   endif
 
   " open correct file and place cursor at position spec
-  execute l:pre.'edit!' fnameescape(l:file)
+  let l:cmd = print('%sedit%s', l:pre, l:bang is 1 ? '!' : '')
+  execute l:cmd fnameescape(l:file)
   return fetch#setpos(l:pos)
 endfunction
 
 " Place the current buffer's cursor at {pos}:
-" @signature:  fetch#setpos({pos:List<Number[,Number]})
+" @signature:  fetch#setpos({pos:List<Number[,Number]>})
 " @returns:    Boolean
 function! fetch#setpos(pos) abort
   let b:fetch_lastpos = [max([a:pos[0], 1]), max([get(a:pos, 1, 0), 1])]
