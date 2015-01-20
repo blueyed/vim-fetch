@@ -75,11 +75,17 @@ function! fetch#edit(file, spec) abort
     return 0                " in doubt, end with invalid user input
   endif
 
+  " don't re-edit if we are in the target buffer already
+  let l:bufpath = expand('%:p:')
+  if l:bufpath is fnamemodify(l:file, ':p')
+    return fetch#setpos(l:pos)
+  endif
+
   " processing setup
   let l:pre = ''            " will be prefixed to edit command
 
   " if current buffer is spec'ed and invalid set it up for wiping
-  if expand('%:p') is fnamemodify(a:file, ':p')
+  if  l:bufpath is fnamemodify(a:file, ':p')
     for l:ignore in s:ignore
       if l:ignore.detect(bufnr('%')) is 1
         return 0
@@ -103,10 +109,17 @@ function! fetch#edit(file, spec) abort
 
   " open correct file and place cursor at position spec
   execute l:pre.'edit!' fnameescape(l:file)
-  let b:fetch_lastpos = [max([l:pos[0], 1]), max([get(l:pos, 1, 0), 1])]
+  return fetch#setpos(l:pos)
+endfunction
+
+" Place the current buffer's cursor at {pos}:
+" @signature:  fetch#setpos({pos:List<Number[,Number]})
+" @returns:    Boolean
+function! fetch#setpos(pos) abort
+  let b:fetch_lastpos = [max([a:pos[0], 1]), max([get(a:pos, 1, 0), 1])]
   call cursor(b:fetch_lastpos[0], b:fetch_lastpos[1])
   silent! normal! zO
-  return 1
+  return getpos('.')[1:2] == b:fetch_lastpos
 endfunction
 
 let &cpo = s:cpo
