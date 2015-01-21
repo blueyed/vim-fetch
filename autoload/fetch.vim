@@ -90,7 +90,6 @@ function! fetch#edit(file, spec) abort
 
   " processing setup
   let l:pre  = ''           " will be prefixed to edit command
-  let l:bang = 0            " force editing by using bang command?
 
   " if current buffer is spec'ed and invalid set it up for wiping
   if expand('%:p') is fnamemodify(a:file, ':p')
@@ -99,9 +98,9 @@ function! fetch#edit(file, spec) abort
         return 0
       endif
     endfor
+    set buftype=nowrite     " avoid issues voiding the buffer
     set bufhidden=wipe      " avoid issues with |bwipeout|
     let l:pre .= 'keepalt ' " don't mess up alternate file on switch
-    let l:bang = 1          " discard merrily
   endif
 
   " clean up argument list
@@ -119,8 +118,7 @@ function! fetch#edit(file, spec) abort
   endif
 
   " open correct file and place cursor at position spec
-  let l:cmd = print('%sedit%s', l:pre, l:bang is 1 ? '!' : '')
-  execute l:cmd fnameescape(l:file)
+  execute l:pre.'edit' fnameescape(l:file)
   return fetch#setpos(l:pos)
 endfunction
 
