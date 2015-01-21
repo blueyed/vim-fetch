@@ -56,13 +56,16 @@ After processing a spec for a buffer, vim-spec sets a buffer-local variable,
 >
 	let b:fetch_lastpos = [lnum, colnum]
 <
-You can use the presence and / or values of that variable to integrate with vim-fetch.
+You can use the presence and / or values of that variable to integrate
+with vim-fetch.
 
-2. autocommand API		*BufFetchPosPre* *BufFetchPosPost*
+2. autocommand API				*BufFetchPosPre* *BufFetchPosPost*
 
-vim-fetch triggers two |User| autocommand events when setting the position in a buffer: `BufFetchPosPre` before the position is set, and `BufFetchPosPost` after.
+vim-fetch triggers two |User| autocommand events when setting the position in
+a buffer: `BufFetchPosPre` before and `BufFetchPosPost` after.
 
-Note: BufFetchPosPost is fired if the position fetch function completes, it does not guarantee the final position of the cursor.
+Note: BufFetchPosPost is fired if the position fetch function completes, it
+does not guarantee the final position of the cursor.
 
 ==============================================================================
 3. Position specifications			*vim-fetch-specs*
