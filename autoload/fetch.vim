@@ -125,10 +125,15 @@ endfunction
 " Place the current buffer's cursor at {pos}:
 " @signature:  fetch#setpos({pos:List<Number[,Number]>})
 " @returns:    Boolean
+" @notes:      triggers the |User| events
+"              - BufFetchPosPre before setting the position
+"              - BufFetchPosPost after setting the position
 function! fetch#setpos(pos) abort
+  doautocmd <nomodeline> User BufFetchPosPre
   let b:fetch_lastpos = [max([a:pos[0], 1]), max([get(a:pos, 1, 0), 1])]
   call cursor(b:fetch_lastpos[0], b:fetch_lastpos[1])
   silent! normal! zO
+  doautocmd <nomodeline> User BufFetchPosPost
   return getpos('.')[1:2] == b:fetch_lastpos
 endfunction
 
